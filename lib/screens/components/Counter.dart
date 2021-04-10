@@ -20,8 +20,8 @@ class CounterState extends State<Counter> {
   static const int _increment = 1;
   static const String _default = '00:00';
   String _display = _default;
-  String _microdisp = '00';
-  var timer, microtimer;
+  String _microDisp = '00';
+  var timer, microTimer;
 
   startTimer() {
     timer = Timer.periodic(
@@ -33,14 +33,34 @@ class CounterState extends State<Counter> {
                   ':' +
                   _second.toString().padLeft(2, '0');
             }));
-    microtimer = Timer.periodic(
+    microTimer = Timer.periodic(
         Duration(microseconds: _increment),
         (Timer t) => setState(() {
               _microsecond = (_microsecond + _increment) % 1000;
-              _microdisp = _microsecond.toString().padLeft(3, '0');
+              _microDisp = _microsecond.toString().padLeft(3, '0');
             }));
   }
+  addToList(BuildContext context){
 
+    context.read<TimeList>().add(
+        new TimerTime(_minute, _second, _microsecond));
+
+  }
+  reinitialize(lapContext){
+    setState(() {
+      {
+        timer.cancel();
+        microTimer.cancel();
+        _minute = 0;
+        _second = 0;
+        _microsecond = 0;
+        _display = _default;
+        _microDisp = '000';
+        _reset = true;
+        lapContext.clear();
+      }
+    });
+  }
   @override
   void initState() {
     super.initState();
@@ -52,7 +72,7 @@ class CounterState extends State<Counter> {
   @override
   void dispose() {
     timer.cancel();
-    microtimer.cancel();
+    microTimer.cancel();
     super.dispose();
   }
 
@@ -66,42 +86,30 @@ class CounterState extends State<Counter> {
           children: [
             Text(_display, style: Theme.of(context).textTheme.headline1),
             Text(
-              _microdisp,
+              _microDisp,
               style: Theme.of(context).textTheme.bodyText1,
             ),
             widget.start ? Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _reset
-                    ? ElevatedButton(
+                ElevatedButton(
+                    onPressed:(){reinitialize(lapContext);},
+                    child: Text('Reset')),
+
+                // if reset is pressed show restart
+                _reset ? ElevatedButton(
                         onPressed: () {
                           _reset = false;
                           startTimer();
                         },
                         child: Text('Restart'))
+                    // second optio or
                     : ElevatedButton(
                         onPressed: () {
                           lapContext.add(
                               new TimerTime(_minute, _second, _microsecond));
                         },
                         child: Text('Lap')),
-                ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        {
-                          timer.cancel();
-                          microtimer.cancel();
-                          _minute = 0;
-                          _second = 0;
-                          _microsecond = 0;
-                          _display = _default;
-                          _microdisp = '000';
-                          _reset = true;
-                          lapContext.clear();
-                        }
-                      });
-                    },
-                    child: Text('Reset'))
               ],
             ):Text('Stopwatch',style: Theme.of(context).textTheme.headline3)
           ],

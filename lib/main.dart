@@ -22,12 +22,11 @@ class Stopwatch extends StatelessWidget {
             fontSize: 30
           ),
           button: TextStyle(
-            fontSize: 40
+            fontSize: 20,
+            fontFamily: 'Corben',
+            fontWeight: FontWeight.w300
           )
         ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-
-        )
       ),
       home : LandingPage(title: 'INK'),
     ));

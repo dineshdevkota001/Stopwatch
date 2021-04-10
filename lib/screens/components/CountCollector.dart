@@ -22,7 +22,7 @@ class CountCollector extends StatelessWidget {
                   child:
                   SingleChildScrollView(
                 child: Column(
-                  children: [Text('Laps', style: Theme.of(context).textTheme.headline5)]..addAll(printLaps(_laps, context)),
+                  children:_laps.length == 0 ? [Text('Laps', style: Theme.of(context).textTheme.headline2)]: [ ]..addAll(printLaps(_laps, context)),
                 ),
               )));
     });
