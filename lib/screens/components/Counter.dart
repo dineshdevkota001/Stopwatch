@@ -22,7 +22,7 @@ class CounterState extends State<Counter> {
   String _display = _default;
   String _microDisp = '00';
   var timer, microTimer;
-
+  var _lapContext;
   startTimer() {
     timer = Timer.periodic(
         Duration(seconds: 1),
@@ -46,7 +46,7 @@ class CounterState extends State<Counter> {
         new TimerTime(_minute, _second, _microsecond));
 
   }
-  reinitialize(lapContext){
+  reinitialize(){
     setState(() {
       {
         timer.cancel();
@@ -57,7 +57,7 @@ class CounterState extends State<Counter> {
         _display = _default;
         _microDisp = '000';
         _reset = true;
-        lapContext.clear();
+        _lapContext.clear();
       }
     });
   }
@@ -73,12 +73,13 @@ class CounterState extends State<Counter> {
   void dispose() {
     timer.cancel();
     microTimer.cancel();
+    _lapContext.clear();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    var lapContext = context.read<TimeList>();
+    _lapContext = context.read<TimeList>();
     return Container(
         padding: EdgeInsets.fromLTRB(30.0, 200.0, 30.0, 30.0),
         child: Column(
@@ -93,7 +94,7 @@ class CounterState extends State<Counter> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                    onPressed:(){reinitialize(lapContext);},
+                    onPressed:(){reinitialize();},
                     child: Text('Reset')),
 
                 // if reset is pressed show restart
@@ -106,7 +107,7 @@ class CounterState extends State<Counter> {
                     // second optio or
                     : ElevatedButton(
                         onPressed: () {
-                          lapContext.add(
+                          _lapContext.add(
                               new TimerTime(_minute, _second, _microsecond));
                         },
                         child: Text('Lap')),

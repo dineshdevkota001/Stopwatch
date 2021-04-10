@@ -12,7 +12,7 @@ class Stopwatch extends StatelessWidget {
     return ChangeNotifierProvider(
         create:(context)=>TimeList(),
     child: MaterialApp(
-      title: 'INK',
+      title: 'Stopwatch',
       theme: ThemeData(
         primaryColor: Colors.blue,
         textTheme: TextTheme(

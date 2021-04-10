@@ -1,4 +1,4 @@
-package com.devkon.ink
+package com.devkon.Stopwatch
 
 import io.flutter.embedding.android.FlutterActivity
 
