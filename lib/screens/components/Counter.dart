@@ -1,48 +1,110 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
-class Counter extends StatefulWidget{
-  Counter({Key key}): super(key:key);
+import '../../class/TimerTime.dart';
+import '../../class/TimeList.dart';
+
+class Counter extends StatefulWidget {
+  final bool start;
+  Counter({Key key, this.start}) : super(key: key);
+
   @override
-  _CounterState createState() => _CounterState();
+  CounterState createState() => CounterState();
 }
 
-class _CounterState extends State<Counter> {
+class CounterState extends State<Counter> {
   int _minute = 0;
   int _second = 0;
-  var timer;
-  final _style = TextStyle(
-  fontSize: 50
-  );
+  int _microsecond = 0;
+  bool _reset = false;
+  static const int _increment = 1;
+  static const String _default = '00:00';
+  String _display = _default;
+  String _microdisp = '00';
+  var timer, microtimer;
+
+  startTimer() {
+    timer = Timer.periodic(
+        Duration(seconds: 1),
+        (Timer t) => setState(() {
+              _second = (_second + 1) % 60;
+              _minute = (_second == 59) ? (_minute + 1) : _minute;
+              _display = _minute.toString().padLeft(2, '0') +
+                  ':' +
+                  _second.toString().padLeft(2, '0');
+            }));
+    microtimer = Timer.periodic(
+        Duration(microseconds: _increment),
+        (Timer t) => setState(() {
+              _microsecond = (_microsecond + _increment) % 1000;
+              _microdisp = _microsecond.toString().padLeft(3, '0');
+            }));
+  }
 
   @override
   void initState() {
     super.initState();
-    timer = Timer.periodic(Duration(seconds: 1), (Timer t) => setState(() {
-      _second = (_second +1) % 60;
-      _minute = (_second+1 == 59 ) ? _minute++ : _minute;
-    })
-    );
+    if (widget.start) {
+      this.startTimer();
+    }
   }
 
   @override
   void dispose() {
     timer.cancel();
+    microtimer.cancel();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: EdgeInsets.all(100),
-        constraints: BoxConstraints(minWidth: 100, maxWidth: 200),
-        child: Row(
+    var lapContext = context.read<TimeList>();
+    return Container(
+        padding: EdgeInsets.fromLTRB(30.0, 200.0, 30.0, 30.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('$_minute',style: _style),
-            Text(' : ', style: _style),
-            Text('$_second', style: _style)
+            Text(_display, style: Theme.of(context).textTheme.headline1),
+            Text(
+              _microdisp,
+              style: Theme.of(context).textTheme.bodyText1,
+            ),
+            widget.start ? Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _reset
+                    ? ElevatedButton(
+                        onPressed: () {
+                          _reset = false;
+                          startTimer();
+                        },
+                        child: Text('Restart'))
+                    : ElevatedButton(
+                        onPressed: () {
+                          lapContext.add(
+                              new TimerTime(_minute, _second, _microsecond));
+                        },
+                        child: Text('Lap')),
+                ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        {
+                          timer.cancel();
+                          microtimer.cancel();
+                          _minute = 0;
+                          _second = 0;
+                          _microsecond = 0;
+                          _display = _default;
+                          _microdisp = '000';
+                          _reset = true;
+                          lapContext.clear();
+                        }
+                      });
+                    },
+                    child: Text('Reset'))
+              ],
+            ):Text('Stopwatch',style: Theme.of(context).textTheme.headline3)
           ],
-        ),
-      ),
-    );
+        ));
   }
 }
